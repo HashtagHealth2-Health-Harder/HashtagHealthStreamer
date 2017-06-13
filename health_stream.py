@@ -28,4 +28,3 @@ if __name__ == '__main__':
 	api = set_twitter_auth(); 
 	health_listener = HashtagHealthListener()
 	health_stream = ty.Stream(auth = api.auth, listener = health_listener) 
-	health_stream.filter()
