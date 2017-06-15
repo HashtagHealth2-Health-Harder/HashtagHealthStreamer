@@ -5,10 +5,11 @@
 	Created by Gabby 'newfound strawberry lover' Ortman. 
 """
 
-import tweepy as ty
+import tweepy as ty # Twitter API wrapper
 import pickle
+import sys
+import time
 from keys import *
-
 
 # override tweepy.StreamListener to create HashtagHealth stream listener.
 # http://docs.tweepy.org/en/v3.4.0/streaming_how_to.html
@@ -17,16 +18,27 @@ class HashtagHealthListener(ty.StreamListener):
 		Twitter Streamer for HashtagHealth
 		More documentation here pls
 	"""
+	category = ''
 	def on_status(self, status): 
 		timestamp = '{}:{}'.format(status.created_at, status.timestamp_ms)
 		tweet_id = status.id
-		# serialize tweet for later processing 
-		# ...move to a better directory
-		with open('{}-{}.pickle'.format(timestamp, tweet_id), 'wb') as f: 
-			pickle.dump(status, f, pickle.HIGHEST_PROTOCOL)
+		# if status has a location
+		if(status.place):
+			# and it's in the united states
+			if(status.place.country_code == 'US'):
+				#serialize tweet for later processing 
+				# with open('../data/{}/{}-{}.pickle'.format(category, timestamp, tweet_id), 'wb') as f: 
+				# 	pickle.dump(status, f, pickle.HIGHEST_PROTOCOL)			
 
 	def on_error(self, error): 
-		pass
+		# possible errors:
+			# unicode(?)
+			# rate limit
+		print(error)
+		time.sleep(60 * 15) # 15 minutes.....I could actually just do this math lmao
+
+	def category(self,category): 
+		category = category
 
 def set_twitter_auth(): 
 	"""
@@ -34,17 +46,16 @@ def set_twitter_auth():
 	"""
 	auth = ty.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 	auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
-	api = ty.API(auth, wait_on_rate_limit= True, wait_on_rate_limit_notify= True)
+	# api = ty.API(auth, wait_on_rate_limit= True, wait_on_rate_limit_notify= True)
+	api = ty.API(auth)
 	return api
 
 if __name__ == '__main__':
-	api = set_twitter_auth(); 
-	health_listener = HashtagHealthListener()
-	health_stream = ty.Stream(auth = api.auth, listener = health_listener)
-	health_stream.filter(track=["cold"]) #lists of identifiers
-	# health_stream.sample() #live tweets
-	# with open('2017-06-15 03:25:19:1497497119262-875192467766730752.pickle', 'rb') as f:
-	# 	data = pickle.load(f)
-	# 	print(data)
-	# 	print(type(data))
-	# 	print(data.text)
+	if(len(sys.argv) >= 2):
+		api = set_twitter_auth(); 
+		category = sys.argv[1]
+		health_listener = HashtagHealthListener()
+		health_listener.category(category)		
+		health_stream = ty.Stream(auth = api.auth, listener = health_listener)
+		track_list = list(sys.argv[2::])
+		health_stream.filter(track=track_list) #lists of identifiers
