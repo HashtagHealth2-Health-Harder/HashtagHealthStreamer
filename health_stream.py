@@ -16,7 +16,6 @@ from keys import *
 class HashtagHealthListener(ty.StreamListener): 
 	"""
 		Twitter Streamer for HashtagHealth
-		More documentation here pls
 	"""
 	def __init__(self, api, category):
 		self.api = api
@@ -39,10 +38,7 @@ class HashtagHealthListener(ty.StreamListener):
 			# unicode(?)
 			# rate limit
 		print(error)
-		time.sleep(60 * 15) # 15 minutes.....I could actually just do this math lmao
-
-	# def category(self,category): 
-	# 	category = category
+		time.sleep(60 * 15)
 
 def set_twitter_auth(): 
 	"""
@@ -50,8 +46,7 @@ def set_twitter_auth():
 	"""
 	auth = ty.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 	auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
-	# api = ty.API(auth, wait_on_rate_limit= True, wait_on_rate_limit_notify= True)
-	api = ty.API(auth)
+	api = ty.API(auth, wait_on_rate_limit= True, wait_on_rate_limit_notify= True)
 	return api
 
 if __name__ == '__main__':
