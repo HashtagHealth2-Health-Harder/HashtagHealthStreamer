@@ -18,7 +18,11 @@ class HashtagHealthListener(ty.StreamListener):
 		Twitter Streamer for HashtagHealth
 		More documentation here pls
 	"""
-	category = ''
+	def __init__(self, api, category):
+		self.api = api
+		self.category = category
+		super(ty.StreamListener, self).__init__()
+        
 	def on_status(self, status): 
 		timestamp = '{}:{}'.format(status.created_at, status.timestamp_ms)
 		tweet_id = status.id
@@ -27,8 +31,8 @@ class HashtagHealthListener(ty.StreamListener):
 			# and it's in the united states
 			if(status.place.country_code == 'US'):
 				#serialize tweet for later processing 
-				# with open('../data/{}/{}-{}.pickle'.format(category, timestamp, tweet_id), 'wb') as f: 
-				# 	pickle.dump(status, f, pickle.HIGHEST_PROTOCOL)			
+				with open('../data/{}/{}-{}.pickle'.format(category, timestamp, tweet_id), 'wb') as f: 
+					pickle.dump(status, f, pickle.HIGHEST_PROTOCOL)		
 
 	def on_error(self, error): 
 		# possible errors:
@@ -37,8 +41,8 @@ class HashtagHealthListener(ty.StreamListener):
 		print(error)
 		time.sleep(60 * 15) # 15 minutes.....I could actually just do this math lmao
 
-	def category(self,category): 
-		category = category
+	# def category(self,category): 
+	# 	category = category
 
 def set_twitter_auth(): 
 	"""
@@ -54,8 +58,7 @@ if __name__ == '__main__':
 	if(len(sys.argv) >= 2):
 		api = set_twitter_auth(); 
 		category = sys.argv[1]
-		health_listener = HashtagHealthListener()
-		health_listener.category(category)		
+		health_listener = HashtagHealthListener(api, category)	
 		health_stream = ty.Stream(auth = api.auth, listener = health_listener)
 		track_list = list(sys.argv[2::])
 		health_stream.filter(track=track_list) #lists of identifiers
